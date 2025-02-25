@@ -32,11 +32,12 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
     }
 
     override fun onRobotFocusGained(qiContext: QiContext?) {
+
         serverIpInput = findViewById(R.id.server_ip_input)
         connectButton = findViewById(R.id.connect_button)
-
         connectButton.setOnClickListener {
-            val serverIP = serverIpInput.text.toString().trim()
+
+            val serverIP = serverIpInput.text.toString()
 
             thread {
                 try {
@@ -47,21 +48,14 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                     // Setup reader for incoming messages
                     reader = BufferedReader(InputStreamReader(socket!!.getInputStream()))
                     Log.d("PepperClient", "Connected to server")
-                    connectButton.text = "Connected"
 
                     // Start listening for commands
                     try {
                         while (true) {
                             // Read command from the server
                             val command = reader?.readLine()
-                            if (command != null && command != "move" && command != "turn_right" && command != "turn_left") {
-                                Log.d("PepperClient", "Received command: $command")
-                                val say = SayBuilder.with(qiContext)
-                                    .withText("$command")
-                                    .build()
-                                say.run()
-                            }
-                            else if (command == "move") {
+
+                            if (command == "move") {
                                 val animation: Animation = AnimationBuilder.with(qiContext) // Create the builder with the context.
                                     .withResources(R.raw.trajectory_forward) // Set the animation resource.
                                     .build()
@@ -89,6 +83,14 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                                     .withAnimation(animation) // Set the animation.
                                     .build() // Build the animate action.
                                 animate.run()
+
+                            }
+                            else {
+                                Log.d("PepperClient", "Received command: $command")
+                                val say = SayBuilder.with(qiContext)
+                                    .withText("$command")
+                                    .build()
+                                say.run()
                             }
                         }
                     } catch (e: Exception) {
@@ -98,10 +100,11 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                     Log.e("PepperClient", "Connection error: ${e.message}")
                 }
             }
+        }
 
 
 
-        }        // Start client in a background thread
+           // Start client in a background thread
 
     }
 
